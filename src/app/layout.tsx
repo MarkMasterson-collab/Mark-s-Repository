@@ -1,23 +1,22 @@
 import type { Metadata } from "next";
-import { Cormorant_Garamond, Outfit } from "next/font/google";
+import { Space_Grotesk, Inter } from "next/font/google";
 import "./globals.css";
 import { Nav } from "@/components/Nav";
 import { ParticleField } from "@/components/ParticleField";
 import { CustomCursor } from "@/components/CustomCursor";
 import { AuroraBackground } from "@/components/AuroraBackground";
 
-const cormorant = Cormorant_Garamond({
+const spaceGrotesk = Space_Grotesk({
   subsets: ["latin"],
   weight: ["300", "400", "500", "600", "700"],
-  style: ["normal", "italic"],
-  variable: "--font-cormorant",
+  variable: "--font-space",
   display: "swap",
 });
 
-const outfit = Outfit({
+const inter = Inter({
   subsets: ["latin"],
   weight: ["300", "400", "500", "600", "700"],
-  variable: "--font-outfit",
+  variable: "--font-inter",
   display: "swap",
 });
 
@@ -26,23 +25,14 @@ export const metadata: Metadata = {
   description: "AI-powered exam prep for EHL students",
 };
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${cormorant.variable} ${outfit.variable}`}>
-      <body className="min-h-screen bg-[#07070E] text-[#EDE8D8] antialiased">
-        {/* ── Ambient layers ── */}
+    <html lang="en" className={`${spaceGrotesk.variable} ${inter.variable}`}>
+      <body className="min-h-screen bg-[#F8F9FF] text-[#0F0E2A] antialiased">
         <AuroraBackground />
         <ParticleField />
         <div className="scanline" aria-hidden="true" />
-
-        {/* ── Custom cursor ── */}
         <CustomCursor />
-
-        {/* ── App shell ── */}
         <div className="relative" style={{ zIndex: 10 }}>
           <Nav />
           <main className="mx-auto max-w-5xl px-4 py-10">{children}</main>
