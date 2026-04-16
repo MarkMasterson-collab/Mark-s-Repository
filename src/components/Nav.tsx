@@ -6,9 +6,10 @@ import { useEffect, useState } from "react";
 import type { User } from "@supabase/supabase-js";
 
 const navLinks = [
-  { href: "/curriculum", label: "Subjects"  },
-  { href: "/subjects",   label: "Courses"   },
-  { href: "/dashboard",  label: "Dashboard" },
+  { href: "/curriculum",        label: "Subjects"    },
+  { href: "/subjects",          label: "Courses"     },
+  { href: "/grade-calculator",  label: "Calculator"  },
+  { href: "/dashboard",         label: "Dashboard"   },
 ];
 
 export function Nav() {

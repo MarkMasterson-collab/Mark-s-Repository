@@ -122,6 +122,26 @@ export default function HomePage() {
         <AnimatedStats />
       </div>
 
+      {/* ════════════════ CALCULATOR BANNER ═══════════════ */}
+      <div className="mx-4 mt-4">
+        <Link href="/grade-calculator"
+          className="flex cursor-pointer items-center justify-between gap-4 rounded-2xl border border-[rgba(79,70,229,0.12)] bg-white/60 px-5 py-4 shadow-sm transition-all duration-200 hover:border-[rgba(79,70,229,0.25)] hover:bg-white hover:shadow-md">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[rgba(79,70,229,0.08)]">
+              <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5 text-[#4F46E5]" stroke="currentColor" strokeWidth={2}>
+                <rect x="4" y="2" width="16" height="20" rx="2" strokeLinecap="round"/>
+                <path d="M8 7h8M8 11h8M8 15h5" strokeLinecap="round"/>
+              </svg>
+            </div>
+            <div>
+              <p className="text-sm font-bold text-[#0F0E2A]">Grade Calculator</p>
+              <p className="text-xs text-[#6B7280]">BOSC 1, 2, 3 & 5 — real-time module &amp; semester grades</p>
+            </div>
+          </div>
+          <span className="shrink-0 text-xs font-semibold text-[#4F46E5]">Try it →</span>
+        </Link>
+      </div>
+
       {/* ══════════════ FEATURES SECTION ══════════════════ */}
       <FeaturesSection />
 
