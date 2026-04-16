@@ -2,14 +2,11 @@
 import { useEffect, useRef } from "react";
 
 interface Particle {
-  x: number;
-  y: number;
-  vx: number;
-  vy: number;
+  x: number; y: number;
+  vx: number; vy: number;
   size: number;
-  baseOpacity: number;
-  opacity: number;
-  hue: number;
+  baseOpacity: number; opacity: number;
+  hue: number; sat: number;
 }
 
 export function ParticleField() {
@@ -24,10 +21,9 @@ export function ParticleField() {
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    const COUNT = 110;
-    const CONNECT_DIST = 140;
-    const REPEL_DIST = 130;
-    const REPEL_STRENGTH = 0.9;
+    const COUNT = 90;
+    const CONNECT = 130;
+    const REPEL = 120;
 
     function resize() {
       canvas.width = window.innerWidth;
@@ -38,13 +34,14 @@ export function ParticleField() {
       particlesRef.current = Array.from({ length: COUNT }, () => ({
         x: Math.random() * canvas.width,
         y: Math.random() * canvas.height,
-        vx: (Math.random() - 0.5) * 0.45,
-        vy: (Math.random() - 0.5) * 0.45,
-        size: Math.random() * 1.6 + 0.4,
-        baseOpacity: Math.random() * 0.35 + 0.12,
-        opacity: Math.random() * 0.35 + 0.12,
-        // 70% green, 30% sky-blue for variety
-        hue: Math.random() > 0.7 ? 197 : 142,
+        vx: (Math.random() - 0.5) * 0.35,
+        vy: (Math.random() - 0.5) * 0.35,
+        size: Math.random() * 1.4 + 0.4,
+        baseOpacity: Math.random() * 0.3 + 0.1,
+        opacity: Math.random() * 0.3 + 0.1,
+        // Gold spectrum: 38-50 hue, warm amber
+        hue: 38 + Math.random() * 14,
+        sat: 60 + Math.random() * 25,
       }));
     }
 
@@ -57,23 +54,19 @@ export function ParticleField() {
         const dy = p.y - mouseRef.current.y;
         const dist = Math.sqrt(dx * dx + dy * dy);
 
-        if (dist < REPEL_DIST && dist > 0) {
-          const f = ((REPEL_DIST - dist) / REPEL_DIST) * REPEL_STRENGTH;
+        if (dist < REPEL && dist > 0) {
+          const f = ((REPEL - dist) / REPEL) * 0.8;
           p.vx += (dx / dist) * f;
           p.vy += (dy / dist) * f;
-          p.opacity = Math.min(p.baseOpacity + f * 0.5, 0.85);
+          p.opacity = Math.min(p.baseOpacity + f * 0.5, 0.75);
         } else {
           p.opacity += (p.baseOpacity - p.opacity) * 0.04;
         }
 
-        // Speed cap
         const spd = Math.sqrt(p.vx * p.vx + p.vy * p.vy);
-        if (spd > 3) { p.vx = (p.vx / spd) * 3; p.vy = (p.vy / spd) * 3; }
-
-        p.vx *= 0.979;
-        p.vy *= 0.979;
-        p.x += p.vx;
-        p.y += p.vy;
+        if (spd > 2.5) { p.vx = (p.vx / spd) * 2.5; p.vy = (p.vy / spd) * 2.5; }
+        p.vx *= 0.98; p.vy *= 0.98;
+        p.x += p.vx; p.y += p.vy;
 
         if (p.x < -10) p.x = canvas.width + 10;
         if (p.x > canvas.width + 10) p.x = -10;
@@ -82,23 +75,22 @@ export function ParticleField() {
 
         ctx.beginPath();
         ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-        ctx.fillStyle = `hsla(${p.hue}, 80%, 62%, ${p.opacity})`;
+        ctx.fillStyle = `hsla(${p.hue}, ${p.sat}%, 62%, ${p.opacity})`;
         ctx.fill();
       }
 
-      // Connections
       for (let i = 0; i < pts.length; i++) {
         for (let j = i + 1; j < pts.length; j++) {
           const dx = pts[i].x - pts[j].x;
           const dy = pts[i].y - pts[j].y;
           const d = Math.sqrt(dx * dx + dy * dy);
-          if (d < CONNECT_DIST) {
-            const a = (1 - d / CONNECT_DIST) * 0.14;
+          if (d < CONNECT) {
+            const a = (1 - d / CONNECT) * 0.1;
             ctx.beginPath();
             ctx.moveTo(pts[i].x, pts[i].y);
             ctx.lineTo(pts[j].x, pts[j].y);
-            ctx.strokeStyle = `rgba(34,197,94,${a})`;
-            ctx.lineWidth = 0.7;
+            ctx.strokeStyle = `rgba(201,168,76,${a})`;
+            ctx.lineWidth = 0.6;
             ctx.stroke();
           }
         }
@@ -107,13 +99,10 @@ export function ParticleField() {
       rafRef.current = requestAnimationFrame(draw);
     }
 
-    resize();
-    init();
-    draw();
+    resize(); init(); draw();
 
     const onResize = () => { resize(); init(); };
     const onMouse = (e: MouseEvent) => { mouseRef.current = { x: e.clientX, y: e.clientY }; };
-
     window.addEventListener("resize", onResize, { passive: true });
     window.addEventListener("mousemove", onMouse, { passive: true });
 
@@ -125,11 +114,6 @@ export function ParticleField() {
   }, []);
 
   return (
-    <canvas
-      ref={canvasRef}
-      className="pointer-events-none fixed inset-0"
-      style={{ zIndex: 1 }}
-      aria-hidden="true"
-    />
+    <canvas ref={canvasRef} className="pointer-events-none fixed inset-0" style={{ zIndex: 1 }} aria-hidden="true" />
   );
 }

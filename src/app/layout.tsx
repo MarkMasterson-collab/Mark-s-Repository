@@ -1,22 +1,23 @@
 import type { Metadata } from "next";
-import { Fira_Sans, Fira_Code } from "next/font/google";
+import { Cormorant_Garamond, Outfit } from "next/font/google";
 import "./globals.css";
 import { Nav } from "@/components/Nav";
 import { ParticleField } from "@/components/ParticleField";
 import { CustomCursor } from "@/components/CustomCursor";
 import { AuroraBackground } from "@/components/AuroraBackground";
 
-const firaSans = Fira_Sans({
+const cormorant = Cormorant_Garamond({
   subsets: ["latin"],
   weight: ["300", "400", "500", "600", "700"],
-  variable: "--font-fira-sans",
+  style: ["normal", "italic"],
+  variable: "--font-cormorant",
   display: "swap",
 });
 
-const firaCode = Fira_Code({
+const outfit = Outfit({
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
-  variable: "--font-fira-code",
+  weight: ["300", "400", "500", "600", "700"],
+  variable: "--font-outfit",
   display: "swap",
 });
 
@@ -31,17 +32,17 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={`${firaSans.variable} ${firaCode.variable}`}>
-      <body className="min-h-screen bg-[#020617] text-white antialiased">
-        {/* ── Full-page ambient layers (z 0–2) ── */}
+    <html lang="en" className={`${cormorant.variable} ${outfit.variable}`}>
+      <body className="min-h-screen bg-[#07070E] text-[#EDE8D8] antialiased">
+        {/* ── Ambient layers ── */}
         <AuroraBackground />
         <ParticleField />
         <div className="scanline" aria-hidden="true" />
 
-        {/* ── Custom cursor (z 99998–99999) ── */}
+        {/* ── Custom cursor ── */}
         <CustomCursor />
 
-        {/* ── App shell (z 10) ── */}
+        {/* ── App shell ── */}
         <div className="relative" style={{ zIndex: 10 }}>
           <Nav />
           <main className="mx-auto max-w-5xl px-4 py-10">{children}</main>

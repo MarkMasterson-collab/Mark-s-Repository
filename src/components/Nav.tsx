@@ -7,14 +7,14 @@ import { useEffect, useState } from "react";
 import type { User } from "@supabase/supabase-js";
 
 const navLinks = [
-  { href: "/curriculum", label: "Subjects" },
-  { href: "/subjects",   label: "Courses"  },
-  { href: "/dashboard",  label: "Dashboard"},
+  { href: "/curriculum", label: "Subjects"  },
+  { href: "/subjects",   label: "Courses"   },
+  { href: "/dashboard",  label: "Dashboard" },
 ];
 
 export function Nav() {
   const pathname = usePathname();
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser]     = useState<User | null>(null);
   const [scrolled, setScrolled] = useState(false);
   const supabase = createClient();
 
@@ -32,76 +32,72 @@ export function Nav() {
     return () => window.removeEventListener("scroll", fn);
   }, []);
 
-  async function handleSignOut() {
-    await supabase.auth.signOut();
-  }
+  async function handleSignOut() { await supabase.auth.signOut(); }
 
   return (
     <header
-      className="sticky top-0 z-50 transition-all duration-300"
+      className="sticky top-0 z-50 transition-all duration-400"
       style={{
-        background: scrolled ? "rgba(2,6,23,0.88)" : "transparent",
-        backdropFilter: scrolled ? "blur(22px)" : "none",
-        WebkitBackdropFilter: scrolled ? "blur(22px)" : "none",
-        borderBottom: scrolled
-          ? "1px solid rgba(255,255,255,0.07)"
-          : "1px solid transparent",
-        boxShadow: scrolled ? "0 4px 24px rgba(0,0,0,0.4)" : "none",
+        background: scrolled ? "rgba(7,7,14,0.9)" : "transparent",
+        backdropFilter: scrolled ? "blur(24px)" : "none",
+        WebkitBackdropFilter: scrolled ? "blur(24px)" : "none",
+        borderBottom: scrolled ? "1px solid rgba(201,168,76,0.1)" : "1px solid transparent",
+        boxShadow: scrolled ? "0 4px 30px rgba(0,0,0,0.5)" : "none",
       }}
     >
-      <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-4">
-        {/* Logo — gradient shimmer */}
-        <Link
-          href="/"
-          className="text-shimmer cursor-pointer text-[15px] font-bold tracking-tight"
-        >
-          EHL Exam Prep
+      <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-5">
+
+        {/* ── Logo ── */}
+        <Link href="/" className="cursor-pointer" aria-label="EHL Exam Prep home">
+          <span className="font-display text-gold-shimmer text-lg font-medium italic tracking-wide">
+            EHL Exam Prep
+          </span>
         </Link>
 
-        {/* Authenticated nav */}
+        {/* ── Authenticated nav ── */}
         {user && (
-          <nav className="flex items-center gap-7">
+          <nav className="flex items-center gap-8">
             {navLinks.map(({ href, label }) => {
               const active = pathname.startsWith(href);
               return (
-                <Link
-                  key={href}
-                  href={href}
-                  className={`cursor-pointer text-sm font-medium transition-colors duration-200 ${
-                    active ? "text-white" : "text-white/50 hover:text-white"
-                  }`}
+                <Link key={href} href={href}
+                  className="cursor-pointer text-sm font-light tracking-wide transition-all duration-200"
+                  style={{
+                    color: active ? "#C9A84C" : "rgba(237,232,216,0.5)",
+                    letterSpacing: "0.06em",
+                  }}
+                  onMouseEnter={e => { if (!active) (e.target as HTMLElement).style.color = "#EDE8D8"; }}
+                  onMouseLeave={e => { if (!active) (e.target as HTMLElement).style.color = "rgba(237,232,216,0.5)"; }}
                 >
                   {label}
                   {active && (
-                    <span
-                      aria-hidden="true"
-                      style={{
-                        display: "block",
-                        height: 2,
-                        background: "#22c55e",
-                        borderRadius: 2,
-                        boxShadow: "0 0 8px rgba(34,197,94,0.7)",
-                        marginTop: 2,
-                      }}
-                    />
+                    <span aria-hidden="true" style={{
+                      display: "block", height: 1,
+                      background: "linear-gradient(90deg, transparent, #C9A84C, transparent)",
+                      boxShadow: "0 0 6px rgba(201,168,76,0.6)",
+                      marginTop: 3, borderRadius: 1,
+                    }} />
                   )}
                 </Link>
               );
             })}
-            <button
-              onClick={handleSignOut}
-              className="cursor-pointer text-sm text-white/35 transition-colors duration-200 hover:text-white/80"
+            <button onClick={handleSignOut}
+              className="cursor-pointer text-sm font-light tracking-wide transition-colors duration-200"
+              style={{ color: "rgba(237,232,216,0.3)", letterSpacing: "0.06em" }}
+              onMouseEnter={e => (e.target as HTMLElement).style.color = "rgba(237,232,216,0.7)"}
+              onMouseLeave={e => (e.target as HTMLElement).style.color = "rgba(237,232,216,0.3)"}
             >
               Sign out
             </button>
           </nav>
         )}
 
-        {/* Unauthenticated — green CTA */}
+        {/* ── Unauthenticated CTA ── */}
         {!user && (
           <Link
             href="/login"
-            className="accent-glow cursor-pointer rounded-lg bg-[#22c55e] px-4 py-2 text-sm font-semibold text-[#020617] transition-all duration-200 hover:bg-[#16a34a] hover:scale-[1.04] active:scale-[0.97]"
+            className="cursor-pointer rounded-full border px-5 py-2 text-sm font-light tracking-wide transition-all duration-300 hover:border-[rgba(201,168,76,0.5)] hover:bg-[rgba(201,168,76,0.08)]"
+            style={{ borderColor: "rgba(201,168,76,0.25)", color: "#C9A84C", letterSpacing: "0.08em" }}
           >
             Sign in
           </Link>
