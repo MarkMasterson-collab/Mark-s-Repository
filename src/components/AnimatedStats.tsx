@@ -2,10 +2,10 @@
 import { useEffect, useRef, useState } from "react";
 
 const STATS = [
-  { value: "27", label: "Courses",   numeric: true  },
-  { value: "3",  label: "Semesters", numeric: true  },
-  { value: "AI", label: "Powered",   numeric: false },
-  { value: "Free",label: "To Use",   numeric: false },
+  { value: "27",   label: "Courses",   numeric: true  },
+  { value: "3",    label: "Semesters", numeric: true  },
+  { value: "AI",   label: "Powered",   numeric: false },
+  { value: "Free", label: "To Use",    numeric: false },
 ];
 
 const CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
@@ -18,8 +18,7 @@ function useCountUp(target: number, duration: number, active: boolean) {
     let id: number;
     const step = (now: number) => {
       const p = Math.min((now - t0) / duration, 1);
-      const eased = 1 - Math.pow(1 - p, 4);
-      setN(Math.round(eased * target));
+      setN(Math.round((1 - Math.pow(1 - p, 4)) * target));
       if (p < 1) id = requestAnimationFrame(step);
     };
     id = requestAnimationFrame(step);
@@ -34,15 +33,10 @@ function useScramble(value: string, active: boolean) {
     if (!active) return;
     let iter = 0;
     const id = setInterval(() => {
-      setDisplay(
-        value
-          .split("")
-          .map((ch, i) =>
-            i < iter ? ch : CHARS[Math.floor(Math.random() * CHARS.length)]
-          )
-          .join("")
-      );
-      iter += 0.6;
+      setDisplay(value.split("").map((ch, i) =>
+        i < iter ? ch : CHARS[Math.floor(Math.random() * CHARS.length)]
+      ).join(""));
+      iter += 0.5;
       if (iter > value.length) clearInterval(id);
     }, 38);
     return () => clearInterval(id);
@@ -50,36 +44,32 @@ function useScramble(value: string, active: boolean) {
   return display;
 }
 
-function Stat({
-  stat,
-  active,
-  index,
-}: {
-  stat: (typeof STATS)[0];
-  active: boolean;
-  index: number;
-}) {
-  const count = useCountUp(stat.numeric ? parseInt(stat.value) : 0, 1800, active && stat.numeric);
+function Stat({ stat, active, index }: { stat: typeof STATS[0]; active: boolean; index: number }) {
+  const count    = useCountUp(stat.numeric ? parseInt(stat.value) : 0, 2000, active && stat.numeric);
   const scramble = useScramble(stat.value, active && !stat.numeric);
 
   return (
     <div
-      className="group flex cursor-default flex-col items-center py-8 text-center transition-all duration-300 hover:bg-white/[0.02]"
-      style={{
-        animationDelay: `${index * 120}ms`,
-      }}
+      className="group flex cursor-default flex-col items-center py-9 text-center"
+      style={{ animationDelay: `${index * 100}ms` }}
     >
       <span
-        className="font-mono text-2xl font-bold transition-all duration-300 group-hover:text-[#22c55e] sm:text-3xl"
+        className="font-display text-4xl font-light italic transition-all duration-300 sm:text-5xl"
         style={{
-          color: active ? "#f8fafc" : "transparent",
-          transition: "color 0.4s ease",
-          textShadow: active ? "0 0 20px rgba(34,197,94,0.2)" : "none",
+          background: active
+            ? "linear-gradient(135deg, #C9A84C 0%, #FFD870 50%, #C9A84C 100%)"
+            : "transparent",
+          WebkitBackgroundClip: active ? "text" : undefined,
+          backgroundClip: active ? "text" : undefined,
+          WebkitTextFillColor: active ? "transparent" : "#EDE8D8",
+          color: active ? undefined : "transparent",
+          transition: "all 0.5s ease",
+          textShadow: "none",
         }}
       >
         {stat.numeric ? count : scramble}
       </span>
-      <span className="mt-1.5 text-[10px] font-semibold uppercase tracking-[0.2em] text-white/30">
+      <span className="mt-2 text-[10px] font-medium uppercase tracking-[0.25em] text-[rgba(237,232,216,0.35)]">
         {stat.label}
       </span>
     </div>
@@ -100,19 +90,9 @@ export function AnimatedStats() {
   }, []);
 
   return (
-    <div
-      ref={ref}
-      className="grid grid-cols-4"
-      style={{ borderTop: "1px solid rgba(255,255,255,0.07)" }}
-    >
+    <div ref={ref} className="grid grid-cols-4" style={{ borderTop: "1px solid rgba(201,168,76,0.12)" }}>
       {STATS.map((s, i) => (
-        <div
-          key={s.label}
-          style={{
-            borderRight:
-              i < STATS.length - 1 ? "1px solid rgba(255,255,255,0.07)" : "none",
-          }}
-        >
+        <div key={s.label} style={{ borderRight: i < STATS.length - 1 ? "1px solid rgba(201,168,76,0.12)" : "none" }}>
           <Stat stat={s} active={active} index={i} />
         </div>
       ))}
