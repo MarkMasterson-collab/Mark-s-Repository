@@ -6,7 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 
 type Question = Database["public"]["Tables"]["questions"]["Row"];
 
-const TIME_PER_QUESTION = 90; // seconds
+const TIME_PER_QUESTION = 90;
 
 export function PracticeTest({
   questions,
@@ -32,7 +32,9 @@ export function PracticeTest({
         (q) => finalAnswers[q.id] === q.correct_answer
       ).length;
 
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       if (user) {
         await supabase.from("test_attempts").insert({
           user_id: user.id,
@@ -72,9 +74,7 @@ export function PracticeTest({
     const updated = { ...answers, [questions[currentIndex].id]: selected };
     setAnswers(updated);
     setShowFeedback(true);
-    if (currentIndex === questions.length - 1) {
-      finish(updated);
-    }
+    if (currentIndex === questions.length - 1) finish(updated);
   }
 
   function handleNext() {
@@ -91,57 +91,82 @@ export function PracticeTest({
   if (finished) {
     const pct = Math.round((score / questions.length) * 100);
     return (
-      <div className="rounded-xl border border-gray-200 bg-white p-8 text-center shadow-sm">
-        <p className="text-4xl font-bold text-gray-900">{pct}%</p>
-        <p className="mt-1 text-sm text-gray-500">
+      <div className="glass rounded-2xl p-10 text-center">
+        <p
+          className="text-6xl font-bold"
+          style={{
+            color: pct >= 70 ? "rgb(134,239,172)" : pct >= 50 ? "rgb(253,224,71)" : "rgb(252,165,165)",
+          }}
+        >
+          {pct}%
+        </p>
+        <p className="mt-2 text-sm text-white/40">
           {score} / {questions.length} correct
         </p>
-        <div className="mt-6 flex justify-center gap-4">
-          <button
-            onClick={() => window.location.reload()}
-            className="rounded-lg bg-gray-900 px-4 py-2 text-sm font-medium text-white hover:bg-gray-700 transition-colors"
-          >
-            Try again
-          </button>
-        </div>
+        <button
+          onClick={() => window.location.reload()}
+          className="mt-8 rounded-lg bg-white px-6 py-2.5 text-sm font-semibold text-black transition-opacity hover:opacity-90"
+        >
+          Try again
+        </button>
       </div>
     );
   }
 
   return (
     <div>
-      <div className="mb-4 flex items-center justify-between text-sm text-gray-500">
+      {/* Progress bar */}
+      <div
+        className="mb-2 h-0.5 w-full rounded-full overflow-hidden"
+        style={{ background: "rgba(255,255,255,0.08)" }}
+      >
+        <div
+          className="h-full rounded-full bg-white/30 transition-all"
+          style={{ width: `${((currentIndex) / questions.length) * 100}%` }}
+        />
+      </div>
+
+      <div className="mb-6 flex items-center justify-between text-xs text-white/40">
         <span>
-          Question {currentIndex + 1} / {questions.length}
+          {currentIndex + 1} / {questions.length}
         </span>
-        <span className={timeLeft < 60 ? "text-red-600 font-semibold" : ""}>
+        <span
+          className="font-mono font-semibold"
+          style={{ color: timeLeft < 60 ? "rgb(252,165,165)" : undefined }}
+        >
           {mins}:{secs.toString().padStart(2, "0")}
         </span>
       </div>
 
-      <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
-        <p className="text-base font-medium text-gray-900">{current.question}</p>
+      <div className="glass rounded-2xl p-6">
+        <p className="text-base font-medium leading-relaxed text-white">
+          {current.question}
+        </p>
 
         {current.type === "multiple_choice" && current.options && (
-          <ul className="mt-4 flex flex-col gap-2">
+          <ul className="mt-5 flex flex-col gap-2">
             {current.options.map((opt) => {
-              let cls =
-                "cursor-pointer rounded-lg border px-4 py-3 text-sm transition-colors ";
+              let style: React.CSSProperties = {};
+              let cls = "w-full cursor-pointer rounded-xl px-4 py-3 text-left text-sm transition-all ";
+
               if (showFeedback) {
-                if (opt === current.correct_answer)
-                  cls += "border-green-500 bg-green-50 text-green-800";
-                else if (opt === selected)
-                  cls += "border-red-400 bg-red-50 text-red-700";
-                else cls += "border-gray-200 text-gray-500";
+                if (opt === current.correct_answer) {
+                  style = { background: "rgba(74,222,128,0.1)", border: "1px solid rgba(74,222,128,0.3)", color: "rgb(134,239,172)" };
+                } else if (opt === selected) {
+                  style = { background: "rgba(248,113,113,0.1)", border: "1px solid rgba(248,113,113,0.3)", color: "rgb(252,165,165)" };
+                } else {
+                  style = { background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.3)" };
+                }
+              } else if (opt === selected) {
+                style = { background: "rgba(255,255,255,0.1)", border: "1px solid rgba(255,255,255,0.3)", color: "white" };
               } else {
-                cls +=
-                  opt === selected
-                    ? "border-gray-900 bg-gray-900 text-white"
-                    : "border-gray-200 hover:border-gray-400";
+                style = { background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.7)" };
+                cls += "hover:bg-white/[0.06] hover:border-white/20 ";
               }
+
               return (
                 <li key={opt}>
-                  <button className={cls} onClick={() => handleSelect(opt)}>
+                  <button className={cls} style={style} onClick={() => handleSelect(opt)}>
                     {opt}
                   </button>
                 </li>
@@ -151,7 +176,10 @@ export function PracticeTest({
         )}
 
         {showFeedback && current.explanation && (
-          <p className="mt-4 rounded-lg bg-blue-50 px-4 py-3 text-sm text-blue-800">
+          <p
+            className="mt-4 rounded-xl px-4 py-3 text-sm leading-relaxed"
+            style={{ background: "rgba(147,197,253,0.07)", border: "1px solid rgba(147,197,253,0.15)", color: "rgba(147,197,253,0.9)" }}
+          >
             {current.explanation}
           </p>
         )}
@@ -161,16 +189,16 @@ export function PracticeTest({
             <button
               onClick={handleConfirm}
               disabled={!selected}
-              className="rounded-lg bg-gray-900 px-4 py-2 text-sm font-medium text-white hover:bg-gray-700 disabled:opacity-40 transition-colors"
+              className="rounded-lg bg-white px-5 py-2 text-sm font-semibold text-black transition-opacity hover:opacity-90 disabled:opacity-25"
             >
               Confirm
             </button>
           ) : currentIndex < questions.length - 1 ? (
             <button
               onClick={handleNext}
-              className="rounded-lg bg-gray-900 px-4 py-2 text-sm font-medium text-white hover:bg-gray-700 transition-colors"
+              className="rounded-lg bg-white px-5 py-2 text-sm font-semibold text-black transition-opacity hover:opacity-90"
             >
-              Next question →
+              Next →
             </button>
           ) : null}
         </div>

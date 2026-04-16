@@ -4,7 +4,9 @@ import { redirect } from "next/navigation";
 
 export default async function DashboardPage() {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
   const { data: attempts } = await supabase
@@ -14,7 +16,6 @@ export default async function DashboardPage() {
     .order("completed_at", { ascending: false })
     .limit(50);
 
-  // Aggregate per subject
   const bySubject = new Map<
     string,
     { name: string; attempts: number; avgScore: number; lastScore: number }
@@ -37,7 +38,6 @@ export default async function DashboardPage() {
   }
 
   const stats = Array.from(bySubject.entries()).map(([id, v]) => ({ id, ...v }));
-
   const totalAttempts = attempts?.length ?? 0;
   const overallAvg =
     attempts && attempts.length > 0
@@ -49,39 +49,48 @@ export default async function DashboardPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
-      <p className="mt-1 text-sm text-gray-500">{user.email}</p>
+      <h1 className="text-3xl font-bold text-white">Dashboard</h1>
+      <p className="mt-1 text-sm text-white/40">{user.email}</p>
 
-      <div className="mt-6 grid gap-4 sm:grid-cols-3">
+      <div className="mt-8 grid gap-4 sm:grid-cols-3">
         <StatCard label="Tests taken" value={totalAttempts} />
-        <StatCard label="Average score" value={overallAvg !== null ? `${overallAvg}%` : "—"} />
+        <StatCard
+          label="Average score"
+          value={overallAvg !== null ? `${overallAvg}%` : "—"}
+        />
         <StatCard label="Subjects studied" value={bySubject.size} />
       </div>
 
       {stats.length > 0 && (
-        <div className="mt-8">
-          <h2 className="font-semibold text-gray-900">Progress by subject</h2>
-          <ul className="mt-3 divide-y divide-gray-100">
+        <div className="mt-10">
+          <h2 className="mb-4 text-xs font-semibold uppercase tracking-[0.15em] text-white/40">
+            Progress by subject
+          </h2>
+          <ul className="space-y-2">
             {stats.map((s) => (
-              <li key={s.id} className="flex items-center justify-between py-3">
+              <li
+                key={s.id}
+                className="glass flex items-center justify-between rounded-xl px-5 py-4 transition-all duration-200"
+              >
                 <div>
                   <Link
                     href={`/subjects/${s.id}`}
-                    className="text-sm font-medium text-gray-800 hover:underline"
+                    className="cursor-pointer text-sm font-medium text-white transition-colors duration-200 hover:text-[#22c55e]"
                   >
                     {s.name}
                   </Link>
-                  <p className="text-xs text-gray-400">
-                    {s.attempts} attempt{s.attempts !== 1 ? "s" : ""} · avg {s.avgScore}%
+                  <p className="mt-0.5 text-xs text-white/30">
+                    {s.attempts} attempt{s.attempts !== 1 ? "s" : ""} · avg{" "}
+                    {s.avgScore}%
                   </p>
                 </div>
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-4">
                   <ScoreBadge score={s.lastScore} />
                   <Link
                     href={`/test?subject=${s.id}`}
-                    className="text-xs text-gray-500 underline hover:text-gray-900"
+                    className="cursor-pointer text-xs text-white/30 transition-colors duration-200 hover:text-white/70"
                   >
-                    Retake
+                    Retake →
                   </Link>
                 </div>
               </li>
@@ -91,11 +100,14 @@ export default async function DashboardPage() {
       )}
 
       {stats.length === 0 && (
-        <div className="mt-12 rounded-xl border border-dashed border-gray-300 p-10 text-center">
-          <p className="text-sm text-gray-500">
+        <div
+          className="mt-12 rounded-xl p-12 text-center"
+          style={{ border: "1px dashed rgba(255,255,255,0.08)" }}
+        >
+          <p className="text-sm text-white/30">
             No tests taken yet.{" "}
-            <Link href="/subjects" className="underline hover:text-gray-900">
-              Browse subjects to start practising.
+            <Link href="/subjects" className="text-white/60 underline hover:text-white transition-colors">
+              Browse courses to start practising.
             </Link>
           </p>
         </div>
@@ -104,30 +116,27 @@ export default async function DashboardPage() {
   );
 }
 
-function StatCard({
-  label,
-  value,
-}: {
-  label: string;
-  value: string | number;
-}) {
+function StatCard({ label, value }: { label: string; value: string | number }) {
   return (
-    <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
-      <p className="text-xs uppercase tracking-wide text-gray-400">{label}</p>
-      <p className="mt-1 text-2xl font-bold text-gray-900">{value}</p>
+    <div className="glass rounded-xl p-5">
+      <p className="text-xs font-semibold uppercase tracking-[0.15em] text-white/40">
+        {label}
+      </p>
+      <p className="font-mono mt-2 text-3xl font-bold text-white">{value}</p>
     </div>
   );
 }
 
 function ScoreBadge({ score }: { score: number }) {
-  const color =
+  const style =
     score >= 70
-      ? "bg-green-100 text-green-700"
+      ? { background: "rgba(74,222,128,0.12)", color: "rgb(134,239,172)", border: "1px solid rgba(74,222,128,0.2)" }
       : score >= 50
-      ? "bg-yellow-100 text-yellow-700"
-      : "bg-red-100 text-red-700";
+      ? { background: "rgba(250,204,21,0.12)", color: "rgb(253,224,71)", border: "1px solid rgba(250,204,21,0.2)" }
+      : { background: "rgba(248,113,113,0.12)", color: "rgb(252,165,165)", border: "1px solid rgba(248,113,113,0.2)" };
+
   return (
-    <span className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${color}`}>
+    <span className="rounded-full px-2.5 py-0.5 text-xs font-semibold" style={style}>
       {score}%
     </span>
   );

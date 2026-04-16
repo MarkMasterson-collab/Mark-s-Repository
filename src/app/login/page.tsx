@@ -1,15 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 
 export default function LoginPage() {
-  const router = useRouter();
   const supabase = createClient();
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [mode, setMode] = useState<"signin" | "signup">("signin");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [magicSent, setMagicSent] = useState(false);
@@ -19,45 +15,67 @@ export default function LoginPage() {
     setError(null);
     setLoading(true);
 
-    if (mode === "signin") {
-      const { error } = await supabase.auth.signInWithOtp({
-        email,
-        options: { shouldCreateUser: true },
-      });
-      if (error) setError(error.message);
-      else setMagicSent(true);
-    } else {
-      const { error } = await supabase.auth.signUp({ email, password });
-      if (error) setError(error.message);
-      else setMagicSent(true);
-    }
+    const { error } = await supabase.auth.signInWithOtp({
+      email,
+      options: { shouldCreateUser: true },
+    });
+
+    if (error) setError(error.message);
+    else setMagicSent(true);
 
     setLoading(false);
   }
 
   if (magicSent) {
     return (
-      <div className="mx-auto mt-20 max-w-sm text-center">
-        <h2 className="text-xl font-semibold text-gray-900">Check your email</h2>
-        <p className="mt-2 text-sm text-gray-500">
-          We sent a magic link to <strong>{email}</strong>. Click it to sign in.
+      <div className="mx-auto mt-24 max-w-sm text-center">
+        {/* SVG mail icon — no emoji */}
+        <div
+          className="mb-6 inline-flex h-12 w-12 items-center justify-center rounded-full"
+          style={{
+            background: "rgba(34,197,94,0.12)",
+            border: "1px solid rgba(34,197,94,0.25)",
+          }}
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="h-5 w-5 text-[#22c55e]"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            strokeWidth={1.8}
+            aria-hidden="true"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25H4.5a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5H4.5a2.25 2.25 0 00-2.25 2.25m19.5 0l-9.75 6.75L2.25 6.75"
+            />
+          </svg>
+        </div>
+        <h2 className="text-xl font-semibold text-white">Check your email</h2>
+        <p className="mt-2 text-sm leading-relaxed text-white/50">
+          We sent a magic link to{" "}
+          <span className="text-white/80">{email}</span>.
+          Click it to sign in.
         </p>
       </div>
     );
   }
 
   return (
-    <div className="mx-auto mt-16 max-w-sm">
-      <h1 className="text-2xl font-bold text-gray-900">
-        {mode === "signin" ? "Sign in" : "Create account"}
-      </h1>
-      <p className="mt-1 text-sm text-gray-500">
-        Use your EHL email address.
+    <div className="mx-auto mt-20 max-w-sm">
+      <h1 className="text-3xl font-bold text-white">Sign in</h1>
+      <p className="mt-2 text-sm leading-relaxed text-white/50">
+        Enter your EHL email to receive a magic link.
       </p>
 
-      <form onSubmit={handleSubmit} className="mt-6 flex flex-col gap-4">
+      <form onSubmit={handleSubmit} className="mt-8 flex flex-col gap-4">
         <div>
-          <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+          <label
+            htmlFor="email"
+            className="block text-xs font-semibold uppercase tracking-[0.12em] text-white/40"
+          >
             Email
           </label>
           <input
@@ -67,31 +85,65 @@ export default function LoginPage() {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="you@ehl.ch"
-            className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-gray-900 focus:outline-none focus:ring-1 focus:ring-gray-900"
+            className="mt-2 block w-full rounded-lg px-4 py-3 text-sm text-white placeholder-white/20 outline-none transition-all duration-200
+              focus-visible:ring-2 focus-visible:ring-[#22c55e] focus-visible:ring-offset-0"
+            style={{
+              background: "rgba(255,255,255,0.05)",
+              border: "1px solid rgba(255,255,255,0.1)",
+            }}
           />
         </div>
 
         {error && (
-          <p className="text-sm text-red-600">{error}</p>
+          <p
+            className="rounded-lg px-4 py-3 text-sm"
+            role="alert"
+            style={{
+              background: "rgba(248,113,113,0.1)",
+              color: "rgb(252,165,165)",
+              border: "1px solid rgba(248,113,113,0.2)",
+            }}
+          >
+            {error}
+          </p>
         )}
 
         <button
           type="submit"
           disabled={loading}
-          className="rounded-lg bg-gray-900 px-4 py-2.5 text-sm font-medium text-white hover:bg-gray-700 disabled:opacity-50 transition-colors"
+          className="cursor-pointer rounded-lg bg-[#22c55e] py-3 text-sm font-semibold text-[#020617] transition-all duration-200
+            hover:bg-[#16a34a] hover:scale-[1.01] active:scale-[0.99]
+            disabled:cursor-not-allowed disabled:opacity-40"
         >
-          {loading ? "Sending…" : "Send magic link"}
+          {loading ? (
+            <span className="flex items-center justify-center gap-2">
+              <svg
+                className="h-4 w-4 animate-spin"
+                viewBox="0 0 24 24"
+                fill="none"
+                aria-hidden="true"
+              >
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                />
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8v8z"
+                />
+              </svg>
+              Sending…
+            </span>
+          ) : (
+            "Send magic link"
+          )}
         </button>
       </form>
-
-      <p className="mt-4 text-center text-sm text-gray-500">
-        <button
-          onClick={() => setMode(mode === "signin" ? "signup" : "signin")}
-          className="underline hover:text-gray-900"
-        >
-          {mode === "signin" ? "Need an account? Sign up" : "Already have an account? Sign in"}
-        </button>
-      </p>
     </div>
   );
 }

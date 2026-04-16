@@ -12,10 +12,13 @@ export default async function TestPage({
 
   if (!subjectId) {
     return (
-      <div className="text-center py-16">
-        <p className="text-gray-500">No subject selected.</p>
-        <Link href="/subjects" className="mt-4 inline-block text-sm underline text-gray-700">
-          Browse subjects
+      <div className="py-20 text-center">
+        <p className="text-white/40">No subject selected.</p>
+        <Link
+          href="/subjects"
+          className="mt-4 inline-block text-sm text-white/60 underline hover:text-white transition-colors"
+        >
+          Browse courses
         </Link>
       </div>
     );
@@ -23,34 +26,34 @@ export default async function TestPage({
 
   const [{ data: subject }, { data: questions }] = await Promise.all([
     supabase.from("subjects").select("name").eq("id", subjectId).single(),
-    supabase
-      .from("questions")
-      .select("*")
-      .eq("subject_id", subjectId)
-      .limit(20),
+    supabase.from("questions").select("*").eq("subject_id", subjectId).limit(20),
   ]);
 
   if (!subject) {
-    return <p className="text-sm text-red-600">Subject not found.</p>;
+    return <p className="text-sm text-red-400">Subject not found.</p>;
   }
 
   return (
     <div>
-      <div className="mb-6">
+      <div className="mb-8">
         <Link
           href={`/subjects/${subjectId}`}
-          className="text-sm text-gray-500 hover:text-gray-900"
+          className="text-xs text-white/40 transition-colors hover:text-white/70"
         >
           ← {subject.name}
         </Link>
-        <h1 className="mt-2 text-2xl font-bold text-gray-900">
-          Practice test — {subject.name}
+        <h1 className="mt-3 text-3xl font-bold text-white">
+          Practice test
         </h1>
+        <p className="mt-1 text-sm text-white/50">{subject.name}</p>
       </div>
 
       {!questions || questions.length === 0 ? (
-        <div className="rounded-xl border border-dashed border-gray-300 p-12 text-center">
-          <p className="text-sm text-gray-500">
+        <div
+          className="rounded-xl p-14 text-center"
+          style={{ border: "1px dashed rgba(255,255,255,0.08)" }}
+        >
+          <p className="text-sm text-white/30">
             No questions available yet. Upload a past paper to generate questions.
           </p>
         </div>
