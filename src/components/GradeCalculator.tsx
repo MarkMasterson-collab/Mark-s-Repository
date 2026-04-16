@@ -11,7 +11,7 @@ interface Course {
   comps?: Comp[];          // special multi-component courses
   noMidterm?: boolean;     // hint only – derived from mtCoeff===0
 }
-interface Mod   { id: string; name: string; semW?: number; courses: Course[] }
+interface Mod   { id: string; name: string; semW?: number; credits?: number; courses: Course[] }
 interface Sem   {
   id: string; name: string; tag: string; threshold: number;
   mods: Mod[];
@@ -26,26 +26,27 @@ const SEMS: Sem[] = [
   {
     id:"b1", name:"BOSC 1", tag:"Semester 1", threshold:4,
     mods:[
-      { id:"b1m1", name:"Module 1 — Business Tools I", semW:0.45, courses:[
+      { id:"b1m1", name:"Module 1 — Business Tools I", semW:0.45, credits:9, courses:[
         {id:"b1_math",  code:"9104BR", name:"Mathematics",                      mtCoeff:0.2, finCoeff:0.8, weight:0.3 },
         {id:"b1_micro", code:"9102BR", name:"Microeconomics",                   mtCoeff:0.3, finCoeff:0.7, weight:0.2 },
         {id:"b1_acc",   code:"9101BC", name:"Financial Accounting",             mtCoeff:0.4, finCoeff:0.6, weight:0.3 },
         {id:"b1_mis",   code:"9103BR", name:"MIS Tools / Spreadsheets",         mtCoeff:0.2, finCoeff:0.8, weight:0.2 },
       ]},
-      { id:"b1m2", name:"Module 2 — Foundations of Hospitality Mgmt I", semW:0.45, courses:[
+      { id:"b1m2", name:"Module 2 — Foundations of Hospitality Mgmt I", semW:0.45, credits:9, courses:[
         {id:"b1_mkt", code:"9113BC", name:"Foundations of Hospitality Marketing",   mtCoeff:0.4, finCoeff:0.6, weight:0.34},
         {id:"b1_fnb", code:"9110BC", name:"Financial Mgmt for F&B Operations",      mtCoeff:0.3, finCoeff:0.7, weight:0.33},
         {id:"b1_hb",  code:"9114BC", name:"Human Behaviour & Performance",          mtCoeff:0.3, finCoeff:0.7, weight:0.33},
       ]},
-      { id:"b1m3", name:"Module 3 — Communication & Culture I", semW:0.1, courses:[
+      { id:"b1m3", name:"Module 3 — Communication & Culture I", semW:0.1, credits:2, courses:[
         {id:"b1_fr", code:"9121-2BM", name:"French A2.1",           mtCoeff:0.4, finCoeff:0.6, weight:0.4},
         {id:"b1_bc", code:"9120BM",   name:"Business Communication", mtCoeff:0.5, finCoeff:0.5, weight:0.6},
       ]},
     ],
     semGrade(mg) {
-      const w=[0.45,0.45,0.1]; let s=0,tw=0;
-      mg.forEach((g,i)=>{ if(g!==null){s+=g*w[i];tw+=w[i];}});
-      return tw>0?s/tw:null;
+      // Credits: M1=9, M2=9, M3=2 (proportional to 0.45/0.45/0.10 weights)
+      const cr=[9,9,2]; let s=0,tw=0;
+      mg.forEach((g,i)=>{ if(g!==null){s+=g*cr[i];tw+=cr[i];}});
+      return tw>0?round1(s/tw):null;
     },
   },
 
@@ -53,30 +54,35 @@ const SEMS: Sem[] = [
   {
     id:"b2", name:"BOSC 2", tag:"Semester 2", threshold:4,
     mods:[
-      { id:"b2m1", name:"Module 1 — Business Tools II", courses:[
+      { id:"b2m1", name:"Module 1 — Business Tools II", credits:15, courses:[
         {id:"b2_tfa",  name:"Topics in Financial Analysis", mtCoeff:0.4, finCoeff:0.6, weight:0.23},
         {id:"b2_mac",  name:"Macroeconomics",               mtCoeff:0.3, finCoeff:0.7, weight:0.23},
         {id:"b2_stat", name:"Statistics",                   mtCoeff:0,   finCoeff:1,   weight:0.3 },
         {id:"b2_ct",   name:"Computational Thinking",       mtCoeff:0.3, finCoeff:0.7, weight:0.23},
       ]},
-      { id:"b2m2", name:"Module 2 — Foundations of Hospitality Mgmt II", courses:[
+      { id:"b2m2", name:"Module 2 — Foundations of Hospitality Mgmt II", credits:10, courses:[
         {id:"b2_sqd", name:"Service Quality and Design",                       mtCoeff:0.3, finCoeff:0.7, weight:0.33},
         {id:"b2_cid", name:"Customer Info & Distribution Channel Mgmt",        mtCoeff:0.3, finCoeff:0.7, weight:0.33},
         {id:"b2_rdm", name:"Room Division Management",                         mtCoeff:0.4, finCoeff:0.6, weight:0.34},
       ]},
-      { id:"b2m3", name:"Module 3 — Communication & Culture II", courses:[
+      { id:"b2m3", name:"Module 3 — Communication & Culture II", credits:5, courses:[
         {id:"b2_fr2", name:"French A2.2",      mtCoeff:0.4,  finCoeff:0.6,  weight:0.33},
         {id:"b2_aw",  name:"Academic Writing", mtCoeff:0.15, finCoeff:0.85, weight:0.67},
       ]},
     ],
-    semGrade(mg){ const v=mg.filter(g=>g!==null) as number[]; return v.length?v.reduce((a,b)=>a+b,0)/v.length:null; },
+    semGrade(mg){
+      // Credits: 15 / 10 / 5 (matching BOSC 3 pattern from spreadsheet)
+      const cr=[15,10,5]; let s=0,tw=0;
+      mg.forEach((g,i)=>{ if(g!==null){s+=g*cr[i];tw+=cr[i];}});
+      return tw>0?round1(s/tw):null;
+    },
   },
 
   /* ── BOSC 3 ─────────────────────────────────────────── */
   {
     id:"b3", name:"BOSC 3", tag:"Semester 3", threshold:4,
     mods:[
-      { id:"b3m1", name:"Module 1 — Business Analysis", courses:[
+      { id:"b3m1", name:"Module 1 — Business Analysis", credits:15, courses:[
         { id:"b3_rev", name:"Revenue Management", mtCoeff:0, finCoeff:1, weight:0.31,
           comps:[
             {id:"quizzes", label:"Quizzes",  weight:0.2},
@@ -88,36 +94,46 @@ const SEMS: Sem[] = [
         {id:"b3_econ", name:"Hospitality Economics",        mtCoeff:0.15, finCoeff:0.85, weight:0.23},
         {id:"b3_som",  name:"Service Operations Management",mtCoeff:0,    finCoeff:1,    weight:0.23},
       ]},
-      { id:"b3m2", name:"Module 2 — Applied Management", courses:[
+      { id:"b3m2", name:"Module 2 — Applied Management", credits:10, courses:[
         {id:"b3_ism", name:"International Services Marketing", mtCoeff:0.5,  finCoeff:0.5,  weight:0.39},
         {id:"b3_tms", name:"Talent Management Systems",        mtCoeff:0.65, finCoeff:0.35, weight:0.39},
         {id:"b3_cs",  name:"Corporate Sustainability",         mtCoeff:0.3,  finCoeff:0.7,  weight:0.22},
       ]},
-      { id:"b3m3", name:"Module 3 — Communication & Culture III", courses:[
+      { id:"b3m3", name:"Module 3 — Communication & Culture III", credits:5, courses:[
         {id:"b3_leg", name:"Legal Challenges of the Hospitality Mgr", mtCoeff:0.25, finCoeff:0.75, weight:0.67},
         {id:"b3_fl",  name:"Foreign Language Course",                 mtCoeff:0.4,  finCoeff:0.6,  weight:0.33},
       ]},
     ],
-    semGrade(mg){ const v=mg.filter(g=>g!==null) as number[]; return v.length?v.reduce((a,b)=>a+b,0)/v.length:null; },
+    semGrade(mg){
+      // Credits from spreadsheet: M1=15, M2=10, M3=5
+      const cr=[15,10,5]; let s=0,tw=0;
+      mg.forEach((g,i)=>{ if(g!==null){s+=g*cr[i];tw+=cr[i];}});
+      return tw>0?round1(s/tw):null;
+    },
   },
 
   /* ── BOSC 5 ─────────────────────────────────────────── */
   {
     id:"b5", name:"BOSC 5", tag:"Semester 5", threshold:4,
     mods:[
-      { id:"b5m1", name:"Module 1 — Integrated Business Analysis", courses:[
+      { id:"b5m1", name:"Module 1 — Integrated Business Analysis", credits:15, courses:[
         {id:"b5_cf",     name:"Corporate Finance",       mtCoeff:0.4,  finCoeff:0.6,  weight:0.37  },
         {id:"b5_cstrat", name:"Corporate Strategy",      mtCoeff:0.45, finCoeff:0.55, weight:0.37  },
         {id:"b5_mr",     name:"Market Research (SBP)",   mtCoeff:0,    finCoeff:1,    weight:0.085 },
         {id:"b5_pm",     name:"Project Management (SBP)",mtCoeff:0.3,  finCoeff:0.7,  weight:0.175 },
       ]},
-      { id:"b5m2", name:"Module 2 — Integrated Hospitality Management", courses:[
+      { id:"b5m2", name:"Module 2 — Integrated Hospitality Management", credits:15, courses:[
         {id:"b5_ham", name:"Hotel Asset Management",            mtCoeff:0.4, finCoeff:0.6, weight:0.33},
         {id:"b5_lob", name:"Leadership & Organisational Behaviour", mtCoeff:0.4, finCoeff:0.6, weight:0.33},
         {id:"b5_ref", name:"Real Estate Finance",               mtCoeff:0.4, finCoeff:0.6, weight:0.34},
       ]},
     ],
-    semGrade(mg){ const v=mg.filter(g=>g!==null) as number[]; return v.length?v.reduce((a,b)=>a+b,0)/v.length:null; },
+    semGrade(mg){
+      // BOSC 5 has 2 modules — equal credits (15 each)
+      const cr=[15,15]; let s=0,tw=0;
+      mg.forEach((g,i)=>{ if(g!==null){s+=g*cr[i];tw+=cr[i];}});
+      return tw>0?round1(s/tw):null;
+    },
   },
 ];
 
@@ -125,6 +141,11 @@ const SEMS: Sem[] = [
    CALCULATION HELPERS
 ═══════════════════════════════════════════════════════════ */
 type GS = Record<string, Record<string, string>>;
+
+/** Round to 1 decimal place — EHL rule: 3.95 → 4.0 (standard rounding) */
+function round1(x: number): number {
+  return Math.round(x * 10) / 10;
+}
 
 function parseG(s?: string): number|null {
   if (!s?.trim()) return null;
@@ -157,7 +178,9 @@ function calcMod(mod: Mod, gs: GS): number|null {
     if (g!==null){ sum+=g*c.weight; tw+=c.weight; hasAny=true; }
   }
   if (!hasAny) return null;
-  return tw>0 ? sum/tw : null;  // normalize for partial entry
+  const raw = tw>0 ? sum/tw : null;
+  // EHL rounds module grades to 1 decimal — so 3.95 → 4.0 (pass)
+  return raw !== null ? round1(raw) : null;
 }
 
 /** If midterm is entered and final is empty, return required final to hit target course grade */
@@ -181,9 +204,9 @@ function gradeTextColor(g: number|null, threshold=4): string {
   return "text-[#EF4444]";
 }
 
-function fmt(g: number|null): string {
+function fmt(g: number|null, decimals=1): string {
   if (g===null) return "—";
-  return g.toFixed(2);
+  return g.toFixed(decimals);
 }
 
 /* ═══════════════════════════════════════════════════════════
@@ -204,12 +227,12 @@ function GradeInput({
   );
 }
 
-function GradeBadge({ value, threshold=4 }: { value:number|null; threshold?:number }) {
+function GradeBadge({ value, threshold=4, decimals=1 }: { value:number|null; threshold?:number; decimals?:number }) {
   const color = gradeColor(value, threshold);
   return (
     <span className="inline-flex items-center gap-1 rounded-lg px-2.5 py-1 text-sm font-bold tabular-nums"
       style={{ background:`${color}14`, color, border:`1.5px solid ${color}30` }}>
-      {fmt(value)}
+      {fmt(value, decimals)}
     </span>
   );
 }
@@ -267,7 +290,7 @@ function CourseRow({
                 <GradeInput value={g[comp.id]??""} onChange={v=>set(comp.id,v)} />
               </label>
             ))}
-            <GradeBadge value={grade} threshold={threshold} />
+            <GradeBadge value={grade} threshold={threshold} decimals={2} />
           </div>
         ) : (
           <>
@@ -332,8 +355,13 @@ function ModuleCard({
         className="flex w-full cursor-pointer items-center justify-between gap-3 px-4 py-3.5 text-left"
         style={{ borderBottom: open ? "1px solid rgba(79,70,229,0.08)" : "none" }}
       >
-        <div className="flex items-center gap-3 min-w-0">
+        <div className="flex items-center gap-2 min-w-0">
           <span className="font-display text-sm font-bold text-[#0F0E2A] leading-tight">{mod.name}</span>
+          {mod.credits && (
+            <span className="shrink-0 rounded-full bg-[rgba(79,70,229,0.08)] px-2 py-0.5 text-[10px] font-semibold text-[#4F46E5]">
+              {mod.credits} cr
+            </span>
+          )}
           {isPartial && (
             <span className="shrink-0 rounded-full bg-[#F97316]/10 px-2 py-0.5 text-[10px] font-semibold text-[#F97316]">
               partial
@@ -378,7 +406,7 @@ function SemesterSummary({
         {/* Big grade */}
         <div className="flex items-baseline gap-2">
           <span className="font-display text-5xl font-bold tabular-nums" style={{ color }}>
-            {fmt(semGrade)}
+            {fmt(semGrade, 1)}
           </span>
           <span className="text-sm font-medium text-[#9CA3AF]">/ 6.0</span>
         </div>
@@ -395,10 +423,10 @@ function SemesterSummary({
               <div key={mod.id} className="flex flex-col gap-0.5 rounded-xl px-3 py-2"
                 style={{ background:`${c}0d`, border:`1px solid ${c}28` }}>
                 <span className="text-[10px] font-semibold uppercase tracking-wide" style={{color:c}}>
-                  Module {i+1}
+                  Module {i+1}{mod.credits ? ` · ${mod.credits}cr` : ""}
                 </span>
                 <span className="font-display text-lg font-bold tabular-nums" style={{color:c}}>
-                  {fmt(mg)}
+                  {fmt(mg, 1)}
                 </span>
               </div>
             );
@@ -501,9 +529,13 @@ export function GradeCalculator() {
       </div>
 
       {/* ── Footer note ── */}
-      <p className="mt-6 text-center text-[11px] text-[#9CA3AF]">
-        Module grades shown are normalised across entered courses only. Pass/Fail indicators appear only when all courses in a module are filled in.
-      </p>
+      <div className="mt-6 rounded-xl border border-[rgba(79,70,229,0.08)] bg-white/40 px-4 py-3 text-center">
+        <p className="text-[11px] text-[#6B7280]">
+          <strong className="text-[#4F46E5]">Rounding:</strong> Module grades are rounded to 1 decimal (e.g. 3.95 → 4.0 = ✓ pass) ·
+          <strong className="text-[#4F46E5]"> GPA:</strong> Semester grade is credit-weighted (credits shown on each module) ·
+          Pass/Fail shows only when all courses in a module are filled in
+        </p>
+      </div>
     </div>
   );
 }
